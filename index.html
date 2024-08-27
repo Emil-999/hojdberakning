@@ -62,16 +62,17 @@
             const headerRow = table.insertRow();
             headerRow.insertCell().outerHTML = "<th>Avstånd från brunn (m)</th>";
             headerRow.insertCell().outerHTML = "<th>Höjd (mm)</th>";
-            headerRow.insertCell().outerHTML = "<th>Skillnad (mm)</th>";
+            headerRow.insertCell().outerHTML = "<th>Medeltjocklek (mm)</th>";
 
             let previousHeight = initialHeight; // För att räkna skillnad
+            let ackumuleradSkillnad = 0; // Ackumulera skillnaden för att räkna ut medeltjocklek
 
             // Generera rader med data baserat på beräkningarna
             for (let i = 0; i <= maxSteps; i++) {
                 const avstand = i * stepSize;
                 let hojd;
 
-                // Använd "Runt brunn" (G4) för avstånd ? 0,5 m, och "Generellt" (G5) för avstånd > 0,5 m
+                // Använd "Runt brunn" (G4) för avstånd ≤ 0,5 m, och "Generellt" (G5) för avstånd > 0,5 m
                 if (avstand <= 0.5) {
                     hojd = initialHeight - (lutningG4 * avstand);
                 } else {
@@ -79,11 +80,14 @@
                 }
 
                 const skillnad = previousHeight - hojd;
+                ackumuleradSkillnad += skillnad;
+
+                const medeltjocklek = ackumuleradSkillnad / 2;
 
                 const row = table.insertRow();
                 row.insertCell().innerText = avstand.toFixed(2);
                 row.insertCell().innerText = hojd.toFixed(1); // Visa resultat med 1 decimal
-                row.insertCell().innerText = skillnad.toFixed(1); // Visa skillnad med 1 decimal
+                row.insertCell().innerText = medeltjocklek.toFixed(1); // Visa medeltjocklek med 1 decimal
 
                 previousHeight = hojd; // Uppdatera för nästa rad
             }
