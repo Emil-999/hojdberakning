@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Höjdberäkningstabell</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            font-size: 24px;
+        }
+        input[type="number"] {
+            width: 150px;
+            padding: 5px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script>
+        function generateTable() {
+            // Hämta inmatningsvärden
+            const initialHeight = parseFloat(document.getElementById('initialHeight').value);
+            const lutningG4 = parseFloat(document.getElementById('lutningG4').value);
+            const lutningG5 = parseFloat(document.getElementById('lutningG5').value);
+            const stepSize = 0.25;
+            const maxSteps = 20; // För att täcka 5 meter (0 till 5 med steg om 0.25)
+
+            if (isNaN(initialHeight) || isNaN(lutningG4) || isNaN(lutningG5)) {
+                alert("Vänligen fyll i alla värden.");
+                return;
+            }
+
+            // Hämta tabellen där resultatet ska visas
+            const table = document.getElementById("resultTable");
+
+            // Rensa tidigare innehåll i tabellen
+            table.innerHTML = "";
+
+            // Skapa rubrikerna
+            const headerRow = table.insertRow();
+            headerRow.insertCell().outerHTML = "<th>Avstånd från brunn (m)</th>";
+            headerRow.insertCell().outerHTML = "<th>Höjd (mm)</th>";
+            headerRow.insertCell().outerHTML = "<th>Skillnad (mm)</th>";
+
+            let previousHeight = initialHeight; // För att räkna skillnad
+
+            // Generera rader med data baserat på beräkningarna
+            for (let i = 0; i <= maxSteps; i++) {
+                const avstand = i * stepSize;
+                let hojd;
+
+                // Använd "Runt brunn" (G4) för avstånd ? 0,5 m, och "Generellt" (G5) för avstånd > 0,5 m
+                if (avstand <= 0.5) {
+                    hojd = initialHeight - (lutningG4 * avstand);
+                } else {
+                    hojd = initialHeight - (lutningG4 * 0.5) - (lutningG5 * (avstand - 0.5));
+                }
+
+                const skillnad = previousHeight - hojd;
+
+                const row = table.insertRow();
+                row.insertCell().innerText = avstand.toFixed(2);
+                row.insertCell().innerText = hojd.toFixed(1); // Visa resultat med 1 decimal
+                row.insertCell().innerText = skillnad.toFixed(1); // Visa skillnad med 1 decimal
+
+                previousHeight = hojd; // Uppdatera för nästa rad
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Höjdberäkningstabell</h1>
+    <div>
+        <label for="initialHeight">Brunnens höjd i relation till laser:</label>
+        <input type="number" id="initialHeight" step="0.1">
+    </div>
+    <div>
+        <label for="lutningG4">Runt brunn:</label>
+        <input type="number" id="lutningG4" step="0.1">
+    </div>
+    <div>
+        <label for="lutningG5">Generellt:</label>
+        <input type="number" id="lutningG5" step="0.1">
+    </div>
+    <button onclick="generateTable()">Generera Tabell</button>
+    <hr>
+    <table id="resultTable"></table>
+</body>
+</html>
